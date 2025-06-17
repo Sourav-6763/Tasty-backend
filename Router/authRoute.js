@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
 const User = require("../Model/User");
+const { successResponse } = require("../Controller/errorSuccessResponse");
 const authRouter = express.Router();
 
 authRouter.post("/google", async (req, res) => {
@@ -17,7 +18,7 @@ authRouter.post("/google", async (req, res) => {
       code,
       client_id: process.env.GOOGLE_CLIENT_ID,
       client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: "https://tasty-treasure-gamma.vercel.app",
+      redirect_uri: "postmessage",
       grant_type: "authorization_code",
     });
 
@@ -40,8 +41,13 @@ authRouter.post("/google", async (req, res) => {
     const token = jwt.sign({ id: user._id, email }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-
-    res.status(200).json({ token, user });
+    return successResponse(res, {
+      statusCode: 201,
+      payload: {
+        token,
+        user,
+      },
+    });
   } catch (err) {
     console.error(err.response?.data || err.message);
     res.status(500).json({ error: "Google login failed" });

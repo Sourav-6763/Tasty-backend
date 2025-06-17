@@ -1,4 +1,4 @@
-const emailWithNodeMailer = require("../helper/Nodemailer");
+const emailWithNodeMailer = require("../helper/nodemailer");
 const OTP = require("../Model/Otp");
 const bcrypt = require("bcryptjs");
 const {
@@ -79,50 +79,52 @@ const sentOTP = async (req, res, next) => {
 const verifyOTP = async (req, res, next) => {
   try {
     const { otp, email } = req.body;
-    const userTypeOtp = Number(otp);
-
+    
+   const newotp=otp.join('');
     const otpRecord = await OTP.findOne({ email });
-    const genarateOtp = Number(otpRecord.otp);
 
-    // Check if OTP record exists
+    // Check existence
     if (!otpRecord) {
-      return successResponse(res, {
-        statusCode: 200,
-        message: "Provide Otp",
-        payload: {},
+      return errorResponse(res, {
+        statusCode: 404,
+        message: "OTP not found or already verified.",
       });
     }
 
-    // Check if OTP is expired
+    // Check expiration
     if (new Date() > otpRecord.expiresAt) {
-      return successResponse(res, {
-        statusCode: 200,
-        message: "OTP is expired",
-        payload: {},
+      await OTP.deleteOne({ email }); // Optional cleanup
+      return errorResponse(res, {
+        statusCode: 410, // Gone
+        message: "OTP has expired.",
       });
     }
 
-    // Check if OTP matches
-    if (genarateOtp !== userTypeOtp) {
-      return successResponse(res, {
-        statusCode: 200,
-        message: "OTP not matched",
-        payload: {},
+    // Check match
+    const userTypedOtp = Number(newotp);
+    const storedOtp = Number(otpRecord.otp);
+
+    if (storedOtp !== userTypedOtp) {
+      return errorResponse(res, {
+        statusCode: 400,
+        message: "OTP is incorrect.",
       });
     }
 
-    // OTP is valid
-    if (genarateOtp === userTypeOtp) {
-      return successResponse(res, {
-        statusCode: 200,
-        message: "OTP verified successfully",
-        payload: {},
-      });
-    }
+    // OTP is correct — delete from DB and return success
+    await OTP.deleteOne({ email });
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "OTP verified successfully.",
+    });
   } catch (error) {
+    console.error("OTP verification error:", error);
     next(error);
   }
 };
+
+
 const signup = async (req, res, next) => {
   const { password, email, name } = req.body;
   try {
