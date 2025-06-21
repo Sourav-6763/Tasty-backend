@@ -86,6 +86,9 @@ const searchRecipe = async (req, res, next) => {
   }
 };
 
+
+
+
 const searchRecipeById = async (req, res, next) => {
   const id = req.params.id || ""; // Get the recipe ID from route params
   try {
@@ -141,24 +144,28 @@ const searchRecipeById = async (req, res, next) => {
 };
 
 const quickAns = async (req, res, next) => {
-  const question = req.params.q;
-  let result = question.splite(" ").join("+");
+  const text = req.query.q;
   try {
-    const response = await axios.get(
-      `https://api.spoonacular.com/recipes/quickAnswer`,
-      {
-        params: {
-          apiKey: process.env.SPOONACULAR_API_KEY,
-          q: result,
-        },
-      }
-    );
-    res.json(response.data);
-    console.log(response.data);
+    const response = await axios.get("https://api.spoonacular.com/food/converse", {
+      params: {
+        text: text, // correct param
+        apiKey: process.env.SPOONACULAR_API_KEY,
+      },
+    });
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Successful",
+      payload: response.data,
+    });
+    
+
   } catch (error) {
-    next(error);
+    console.error("Spoonacular API Error:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to fetch data" });
   }
 };
+
+
 
 
 
