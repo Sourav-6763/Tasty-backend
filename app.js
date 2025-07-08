@@ -10,7 +10,7 @@ const createError = require("http-errors");
 const { errorResponse } = require('./Controller/errorSuccessResponse');
 const authRouter = require('./Router/authRoute');
 const userRouter = require("./Router/userRoute");
-
+const { GoogleGenAI }=require ("@google/genai");
 
 
 
@@ -40,6 +40,11 @@ main();
 app.use('/api/recipe',recipeRouter);
 app.use('/api/auth', authRouter); 
 app.use('/api/user', userRouter); 
+
+
+
+
+
 // Client error handling
 app.use((req, res, next) => {
   const err = createError(404, "Route not found");
