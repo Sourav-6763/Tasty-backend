@@ -35,7 +35,9 @@ async function main(options = {}) {
 
 main();
 
-
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
 
 app.use('/api/recipe',recipeRouter);
 app.use('/api/auth', authRouter); 
