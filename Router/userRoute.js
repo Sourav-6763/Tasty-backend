@@ -6,6 +6,7 @@ const {
   verifyOTP,
   signup,
   login,
+  updateProfile,
 } = require("../Controller/userController"); 
 
 // Route to send OTP
@@ -19,5 +20,6 @@ userRouter.post("/signup", signup);
 
 // Route to login user
 userRouter.post("/login", login);
+userRouter.put("/updateUser",updateProfile);
 
 module.exports = userRouter;

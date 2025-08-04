@@ -1,3 +1,8 @@
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  // Optional: process.exit(1); // Restart app via PM2 or nodemon
+});
+
 require("dotenv").config();
 const express = require('express');
 const axios = require('axios');
@@ -10,7 +15,8 @@ const createError = require("http-errors");
 const { errorResponse } = require('./Controller/errorSuccessResponse');
 const authRouter = require('./Router/authRoute');
 const userRouter = require("./Router/userRoute");
-const { GoogleGenAI }=require ("@google/genai");
+const fileupload =require("express-fileupload");
+const uploadRecipeRouter = require("./Router/uploadRecipe");
 
 
 
@@ -35,11 +41,15 @@ async function main(options = {}) {
 
 main();
 
-
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
+app.use(fileupload());
 
 app.use('/api/recipe',recipeRouter);
 app.use('/api/auth', authRouter); 
 app.use('/api/user', userRouter); 
+app.use('/api/user/upload',uploadRecipeRouter); 
 
 
 

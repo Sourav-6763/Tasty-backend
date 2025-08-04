@@ -7,6 +7,7 @@ const {
 } = require("../Controller/errorSuccessResponse");
 const User = require("../Model/User");
 const jwt = require("jsonwebtoken");
+const uploadFile = require("../helper/cloudinaryConfig");
 
 const sentOTP = async (req, res, next) => {
   try {
@@ -218,9 +219,42 @@ const login = async (req, res, next) => {
   });
 };
 
+
+const updateProfile = async (req, res) => {
+  try {
+    const { userId, name, email, FavoriteFood } = req.body;
+    const updateFields = {
+      name,
+      email,
+      FavoriteFood,
+    };
+
+    // Check for uploaded file (cover photo)
+    if (req.files && req.files.coverPhoto) {
+      const uploaded = await uploadFile(req.files.coverPhoto); // ⬅️ Cloudinary upload
+      updateFields.coverPhoto = uploaded.secure_url;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateFields },
+      { new: true }
+    );
+
+    return res.json({ success: true, payload: { updatedUser } });
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+
+
+
 module.exports = {
   sentOTP,
   verifyOTP,
   signup,
   login,
+  updateProfile
 };
