@@ -44,7 +44,10 @@ main();
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: "ok", uptime: process.uptime() });
 });
+<<<<<<< HEAD
 app.use(fileupload());
+=======
+>>>>>>> bdd2d0159bbc17a0d5d1f34f04c51029655b7fd3
 
 app.use('/api/recipe',recipeRouter);
 app.use('/api/auth', authRouter); 
