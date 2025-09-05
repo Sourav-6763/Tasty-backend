@@ -3,9 +3,9 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
-  FavoriteFood:{type:String},
-  coverPhoto:{
-    type:String
+  FavoriteFood: { type: String },
+  coverPhoto: {
+    type: String,
   },
   picture: {
     type: String,

@@ -60,6 +60,8 @@ const Comment = require("../Model/Comment");
 const { GoogleGenAI } = require("@google/genai");
 const RECIPE = require("../Model/UploadRecipe");
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const vision = require("@google-cloud/vision");
+const uploadFile = require("../helper/cloudinaryConfig");
 
 // routes/recipe.js
 
@@ -242,7 +244,7 @@ const quickAns = async (req, res, next) => {
 
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: text,
+      contents: `Give answer in 1-10 sentences ${text}`,
     });
 
     const output = response.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -336,6 +338,8 @@ const randomRecipes = async (req, res, next) => {
     });
   }
 };
+
+
 
 module.exports = {
   searchRecipe,

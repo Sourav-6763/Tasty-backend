@@ -25,7 +25,7 @@ app.use(express.json());
 app.use(cors({
  origin: '*',
 }));
-
+app.use(fileupload()); 
 
 const port = process.env.PORT || 5000;
 
@@ -49,7 +49,6 @@ app.use('/api/recipe',recipeRouter);
 app.use('/api/auth', authRouter); 
 app.use('/api/user', userRouter); 
 app.use('/api/user/upload',uploadRecipeRouter); 
-
 
 
 

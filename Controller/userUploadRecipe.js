@@ -1,18 +1,28 @@
+const { default: mongoose } = require("mongoose");
 const uploadFile = require("../helper/cloudinaryConfig");
 const RECIPE = require("../Model/UploadRecipe");
 const User = require("../Model/User");
 const { errorResponse, successResponse } = require("./errorSuccessResponse");
 
-const UserUploadRecipe = async (req, res,next) => {
-  const { title, description, time, serving, cost, step, ingredients, userId } =
-    req.body;
+const UserUploadRecipe = async (req, res, next) => {
+  const {
+    title,
+    description,
+    time,
+    serving,
+    cost,
+    steps,
+    ingredients,
+    userId,
+  } = req.body;
+
   if (
     !title ||
     !description ||
     !time ||
     !serving ||
     !cost ||
-    !step ||
+    !steps ||
     !ingredients ||
     !userId
   ) {
@@ -35,7 +45,7 @@ const UserUploadRecipe = async (req, res,next) => {
     const result = await uploadFile(file);
 
     // ✅ Parse step and ingredients if they're sent as JSON strings
-    const parsedSteps = typeof step === "string" ? JSON.parse(step) : step;
+    const parsedSteps = typeof steps === "string" ? JSON.parse(steps) : steps;
     const parsedIngredients =
       typeof ingredients === "string" ? JSON.parse(ingredients) : ingredients;
 
@@ -53,8 +63,9 @@ const UserUploadRecipe = async (req, res,next) => {
     });
 
     await newRecipe.save();
-    const newdata=await User.findByIdAndUpdate(userId,{$push:{recipe:newRecipe._id}});
-    await newdata.save();
+    const newdata = await User.findByIdAndUpdate(userId, {
+      $push: { recipe: newRecipe._id },
+    });
 
     return successResponse(res, {
       statusCode: 201,
@@ -95,7 +106,56 @@ const ViewUploadRecipe = async (req, res, next) => {
       statusCode: 200,
       payload: response,
     });
+  } catch (error) {
+    next(error);
+  }
+};
 
+const commentRecipe = async (req, res, next) => {
+  const { recipeId } = req.params;
+  const { userId, newComment } = req.body;
+// console.log(userId);
+  if (!userId) {
+    return errorResponse(res, {
+      statusCode: 300,
+      message: "please  login to comment",
+    });
+  }
+
+  try {
+    const recipe = await RECIPE.findById(recipeId);
+    // console.log(recipe);
+    recipe.comment.push({
+       user: userId,
+      text: newComment,
+      createdAt: new Date(),
+    });
+    await recipe.save();
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "success",
+      payload: {},
+    });
+  } catch (error) {
+    next(error);
+  }
+
+  
+};
+
+const getcommentUserRecipe = async (req, res, next) => {
+  const { recipeId } = req.params;
+  try {
+    const updatedRecipe = await RECIPE.findById(recipeId)
+      .populate("user", "name email picture")           // populate recipe creator
+      .populate("comment.user", "name email picture");  // populate each comment’s user
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "success",
+      payload: { recipe: updatedRecipe },
+    });
   } catch (error) {
     next(error);
   }
@@ -104,5 +164,8 @@ const ViewUploadRecipe = async (req, res, next) => {
 
 
 module.exports = {
-  UserUploadRecipe,ViewUploadRecipe
+  UserUploadRecipe,
+  ViewUploadRecipe,
+  commentRecipe,
+  getcommentUserRecipe
 };

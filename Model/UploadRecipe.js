@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const uploadRecipeSchema = new mongoose.Schema({
-  user:{
+  user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:"User",
-    required:true
+    ref: "User",
+    required: true,
   },
   title: {
     type: String,
@@ -38,18 +38,33 @@ const uploadRecipeSchema = new mongoose.Schema({
     type: [String],
     required: true,
   },
- likes: [
+  likes: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
-    }
+      ref: "User",
+    },
   ],
-
+  comment: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      text: {
+        type: String,
+        required: true,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
-  }
+  },
 });
 
- const RECIPE= mongoose.model('RECIPE', uploadRecipeSchema);
- module.exports=RECIPE;
+const RECIPE = mongoose.model("RECIPE", uploadRecipeSchema);
+module.exports = RECIPE;
