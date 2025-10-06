@@ -50,6 +50,9 @@ app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter); 
 app.use('/api/user/upload',uploadRecipeRouter); 
 
+app.get('/', (req, res) => {
+  res.status(200).json({ status: "ok", });
+});
 
 
 
