@@ -8,6 +8,7 @@ const {
 const User = require("../Model/User");
 const jwt = require("jsonwebtoken");
 const uploadFile = require("../helper/cloudinaryConfig");
+const cloudinary = require("cloudinary").v2;
 
 const sentOTP = async (req, res, next) => {
   try {
@@ -80,8 +81,8 @@ const sentOTP = async (req, res, next) => {
 const verifyOTP = async (req, res, next) => {
   try {
     const { otp, email } = req.body;
-    
-   const newotp=otp.join('');
+
+    const newotp = otp.join("");
     const otpRecord = await OTP.findOne({ email });
 
     // Check existence
@@ -124,7 +125,6 @@ const verifyOTP = async (req, res, next) => {
     next(error);
   }
 };
-
 
 const signup = async (req, res, next) => {
   const { password, email, name } = req.body;
@@ -219,7 +219,6 @@ const login = async (req, res, next) => {
   });
 };
 
-
 const updateProfile = async (req, res) => {
   try {
     const { userId, name, email, FavoriteFood } = req.body;
@@ -228,11 +227,33 @@ const updateProfile = async (req, res) => {
       email,
       FavoriteFood,
     };
-
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
     // Check for uploaded file (cover photo)
     if (req.files && req.files.coverPhoto) {
+      if (user.coverPhoto?.public_id) {
+        await cloudinary.uploader.destroy(user.coverPhoto.public_id);
+      }
       const uploaded = await uploadFile(req.files.coverPhoto); // ⬅️ Cloudinary upload
-      updateFields.coverPhoto = uploaded.secure_url;
+      updateFields.coverPhoto = {
+        url: uploaded.secure_url,
+        public_id: uploaded.public_id,
+      };
+    }
+
+    if (req.files && req.files.avtarPhoto) {
+      if (user.picture?.public_id) {
+        await cloudinary.uploader.destroy(user.picture.public_id);
+      }
+      const uploaded = await uploadFile(req.files.avtarPhoto); // ⬅️ Cloudinary upload
+      updateFields.picture = {
+        url: uploaded.secure_url,
+        public_id: uploaded.public_id,
+      };
     }
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -248,13 +269,10 @@ const updateProfile = async (req, res) => {
   }
 };
 
-
-
-
 module.exports = {
   sentOTP,
   verifyOTP,
   signup,
   login,
-  updateProfile
+  updateProfile,
 };
